@@ -1,0 +1,11 @@
+modules = ["python-base-3.13", "nodejs-24"]
+run = "start"
+[nix]
+channel = "stable-25_05"
+
+[deployment]
+run = ["sh", "-c", "start"]
+
+[[ports]]
+localPort = 8000
+externalPort = 80
