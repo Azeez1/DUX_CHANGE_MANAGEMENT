@@ -1,0 +1,2685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Readiness Planner | DUX MACHINA OS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2563eb;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo::before {
+            content: "⚙️";
+            font-size: 28px;
+        }
+        
+        .tagline {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 400;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            background: #fff;
+            padding: 30px 0;
+            margin-top: 80px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            right: -50%;
+            height: 2px;
+            background: #e5e7eb;
+            z-index: -1;
+        }
+        
+        .progress-step:last-child::before {
+            display: none;
+        }
+        
+        .progress-step.active::before {
+            background: #2563eb;
+        }
+        
+        .progress-step.completed::before {
+            background: #10b981;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-step.active .step-circle {
+            border-color: #2563eb;
+            color: #2563eb;
+            transform: scale(1.1);
+        }
+        
+        .progress-step.completed .step-circle {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .progress-step.active .step-label,
+        .progress-step.completed .step-label {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 40px 0 80px;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .phase-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .phase-container.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .phase-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .phase-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        
+        .phase-subtitle {
+            font-size: 18px;
+            color: #6b7280;
+        }
+        
+        /* Phase 1: Stakeholder Assessment */
+        .stakeholder-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        /* Help text and tooltips */
+        .help-text {
+            background: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        .help-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: help;
+            margin-left: 5px;
+            position: relative;
+        }
+        
+        .tooltip {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            max-width: 250px;
+            white-space: normal;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1e293b;
+        }
+        
+        .help-icon:hover .tooltip {
+            opacity: 1;
+        }
+        
+        .stakeholder-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        /* Legend for stakeholder types */
+        .stakeholder-legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .legend-icon {
+            font-size: 24px;
+            line-height: 1;
+        }
+        
+        .legend-content {
+            flex: 1;
+        }
+        
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #1f2937;
+        }
+        
+        .legend-description {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .add-stakeholder-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .add-stakeholder-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .stakeholder-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .stakeholder-item:hover {
+            background: #f3f4f6;
+            transform: translateX(5px);
+        }
+        
+        .stakeholder-input {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .stakeholder-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .stakeholder-select {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .remove-btn:hover {
+            background: #dc2626;
+        }
+        
+        /* Stakeholder Map Visualization */
+        .stakeholder-map {
+            background: #fff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .map-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 150px);
+            gap: 2px;
+            background: #e5e7eb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .map-cell {
+            background: white;
+            padding: 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .map-cell-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stakeholder-bubble {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+            margin: 2px;
+            animation: bubbleIn 0.3s ease;
+        }
+        
+        @keyframes bubbleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .map-cell.champion-high { background: #dcfce7; }
+        .map-cell.champion-medium { background: #ecfdf5; }
+        .map-cell.champion-low { background: #f0fdf4; }
+        .map-cell.neutral-high { background: #fef3c7; }
+        .map-cell.neutral-medium { background: #fffbeb; }
+        .map-cell.neutral-low { background: #fffef3; }
+        .map-cell.resistor-high { background: #fee2e2; }
+        .map-cell.resistor-medium { background: #fef2f2; }
+        .map-cell.resistor-low { background: #fff5f5; }
+        
+        /* Phase 2: Communication Plan */
+        .communication-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .task-item:hover {
+            background: #f3f4f6;
+            transform: translateX(5px);
+        }
+        
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .task-item.checked .task-checkbox {
+            background: #10b981;
+            border-color: #10b981;
+        }
+        
+        .task-item.checked .task-checkbox::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .task-description {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .task-item.checked .task-title {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+        
+        /* Timeline Visualization */
+        .timeline-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .timeline-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: slideIn 0.5s ease forwards;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            padding-right: 50%;
+            text-align: right;
+        }
+        
+        .timeline-item:nth-child(even) {
+            padding-left: 50%;
+            text-align: left;
+        }
+        
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+            display: inline-block;
+            max-width: 400px;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            top: 50%;
+            width: 16px;
+            height: 16px;
+            background: #2563eb;
+            border-radius: 50%;
+            transform: translateY(-50%);
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 3px #e5e7eb;
+        }
+        
+        .timeline-item:nth-child(odd) .timeline-dot {
+            right: -8px;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-dot {
+            left: -8px;
+        }
+        
+        .timeline-date {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-event {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+        
+        /* Phase 3: Risk Identification */
+        .risk-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .risk-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: move;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .risk-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .risk-item.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+        
+        .risk-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .risk-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .risk-description {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .priority-section {
+            background: #fee2e2;
+            border: 2px dashed #ef4444;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .priority-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 20px;
+        }
+        
+        .priority-slots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .priority-slot {
+            background: white;
+            border: 2px dashed #ef4444;
+            border-radius: 8px;
+            padding: 30px 20px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .priority-slot.filled {
+            border-style: solid;
+            background: #fef2f2;
+        }
+        
+        .slot-number {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ef4444;
+            opacity: 0.3;
+        }
+        
+        .slot-placeholder {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
+        /* Lead Capture Form */
+        .lead-capture-section {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .lead-capture-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .lead-form {
+            position: relative;
+            z-index: 1;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .lead-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .lead-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .form-select option {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: white;
+            color: #2563eb;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            gap: 20px;
+        }
+        
+        .nav-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-btn {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+        
+        .back-btn:hover {
+            background: #d1d5db;
+        }
+        
+        .next-btn {
+            background: #2563eb;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .next-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .next-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Playbook Report Styles */
+        .playbook-report {
+            display: none;
+            background: white;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 60px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            font-family: 'Georgia', serif;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .playbook-report, .playbook-report * {
+                visibility: visible;
+            }
+            .playbook-report {
+                position: absolute;
+                left: 0;
+                top: 0;
+                margin: 0;
+                padding: 40px;
+                box-shadow: none;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        
+        .report-header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #2563eb;
+        }
+        
+        .report-logo {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        
+        .report-title {
+            font-size: 28px;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        
+        .report-company {
+            font-size: 24px;
+            color: #2563eb;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .report-date {
+            color: #6b7280;
+            font-size: 16px;
+        }
+        
+        .report-section {
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            color: #2563eb;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-icon {
+            font-size: 28px;
+        }
+        
+        .stakeholder-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .stakeholder-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stakeholder-category {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .category-header {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stakeholder-list {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .timeline-report {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-report-item {
+            position: relative;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border-left: 2px solid #e5e7eb;
+            padding-left: 30px;
+        }
+        
+        .timeline-report-item:last-child {
+            border-left: none;
+        }
+        
+        .timeline-report-dot {
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            background: #2563eb;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+        
+        .timeline-report-date {
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 5px;
+        }
+        
+        .risk-priority-list {
+            counter-reset: risk-counter;
+        }
+        
+        .risk-priority-item {
+            counter-increment: risk-counter;
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 20px;
+            background: #fee2e2;
+            padding: 20px 20px 20px 60px;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+        }
+        
+        .risk-priority-item::before {
+            content: counter(risk-counter);
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        .risk-title-report {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #dc2626;
+        }
+        
+        .risk-mitigation {
+            font-size: 14px;
+            color: #7f1d1d;
+            font-style: italic;
+        }
+        
+        .executive-summary {
+            background: #eff6ff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #3b82f6;
+        }
+        
+        .next-steps {
+            background: #f0fdf4;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #10b981;
+        }
+        
+        .next-steps-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .next-steps-list li {
+            padding-left: 30px;
+            position: relative;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        
+        .next-steps-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .download-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .download-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .print-btn {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .print-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .email-btn {
+            background: white;
+            color: #2563eb;
+            border: 2px solid #2563eb;
+        }
+        
+        .email-btn:hover {
+            background: #eff6ff;
+        }
+        
+        .footer-info {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .success-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+        }
+        
+        .success-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+        
+        .success-text {
+            font-size: 18px;
+            color: #6b7280;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+            
+            /* Header adjustments */
+            .header-content {
+                padding: 15px 0;
+            }
+            
+            .logo {
+                font-size: 18px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .logo::before {
+                font-size: 24px;
+            }
+            
+            .tagline {
+                font-size: 12px;
+            }
+            
+            /* Progress bar mobile */
+            .progress-container {
+                margin-top: 70px;
+                padding: 20px 0;
+            }
+            
+            .progress-steps {
+                max-width: 100%;
+                padding: 0 20px;
+            }
+            
+            .step-circle {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .step-label {
+                font-size: 11px;
+                display: none;
+            }
+            
+            .progress-step.active .step-label {
+                display: block;
+            }
+            
+            /* Main content */
+            .main-content {
+                padding: 20px 0 60px;
+            }
+            
+            .phase-header {
+                margin-bottom: 30px;
+                padding: 0 10px;
+            }
+            
+            .phase-title {
+                font-size: 24px;
+                line-height: 1.2;
+            }
+            
+            .phase-subtitle {
+                font-size: 14px;
+            }
+            
+            /* Phase 1 mobile */
+            .stakeholder-section {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .add-stakeholder-btn {
+                font-size: 14px;
+                padding: 10px 20px;
+                margin-bottom: 20px;
+            }
+            
+            .stakeholder-item {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .stakeholder-input,
+            .stakeholder-select {
+                font-size: 14px;
+                padding: 10px;
+            }
+            
+            .remove-btn {
+                width: 100%;
+            }
+            
+            /* Stakeholder map mobile */
+            .stakeholder-map {
+                padding: 20px;
+                overflow-x: auto;
+            }
+            
+            .map-title {
+                font-size: 20px;
+            }
+            
+            .map-grid {
+                min-width: 500px;
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(3, 80px);
+            }
+            
+            .map-cell {
+                padding: 10px;
+            }
+            
+            .map-cell-label {
+                font-size: 10px;
+            }
+            
+            .stakeholder-bubble {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+            
+            /* Phase 2 mobile */
+            .communication-section {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .task-item {
+                padding: 15px;
+                gap: 12px;
+            }
+            
+            .task-checkbox {
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+            }
+            
+            .task-title {
+                font-size: 14px;
+            }
+            
+            .task-description {
+                font-size: 12px;
+            }
+            
+            /* Timeline mobile */
+            .timeline-section {
+                padding: 20px;
+            }
+            
+            .timeline-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .timeline {
+                padding: 10px 0;
+            }
+            
+            .timeline-item {
+                margin-bottom: 25px;
+            }
+            
+            .timeline-item:nth-child(odd),
+            .timeline-item:nth-child(even) {
+                padding-left: 40px;
+                padding-right: 10px;
+                text-align: left;
+            }
+            
+            .timeline-line {
+                left: 15px;
+            }
+            
+            .timeline-dot {
+                left: 7px !important;
+                right: auto !important;
+                width: 14px;
+                height: 14px;
+            }
+            
+            .timeline-content {
+                padding: 15px;
+                max-width: 100%;
+            }
+            
+            .timeline-date {
+                font-size: 12px;
+            }
+            
+            .timeline-event {
+                font-size: 14px;
+            }
+            
+            /* Phase 3 mobile */
+            .risk-section {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .risk-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin-bottom: 30px;
+            }
+            
+            .risk-item {
+                padding: 15px;
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 15px;
+                align-items: center;
+            }
+            
+            .risk-icon {
+                font-size: 24px;
+                margin-bottom: 0;
+            }
+            
+            .risk-title {
+                font-size: 14px;
+            }
+            
+            .risk-description {
+                font-size: 12px;
+                grid-column: 2;
+            }
+            
+            .priority-section {
+                padding: 20px;
+            }
+            
+            .priority-title {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+            
+            .priority-slots {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .priority-slot {
+                padding: 20px;
+                min-height: 80px;
+            }
+            
+            .slot-number {
+                font-size: 18px;
+                top: 8px;
+                left: 12px;
+            }
+            
+            /* Phase 4 mobile */
+            .lead-capture-section {
+                padding: 40px 20px;
+                border-radius: 0;
+            }
+            
+            .lead-title {
+                font-size: 24px;
+            }
+            
+            .lead-subtitle {
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            
+            .form-input,
+            .form-select {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 12px;
+            }
+            
+            .submit-btn {
+                font-size: 16px;
+                padding: 14px;
+                margin-top: 20px;
+            }
+            
+            /* Mobile help text and legends */
+            .help-text {
+                padding: 15px;
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+            
+            .stakeholder-legend {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .legend-item {
+                gap: 8px;
+            }
+            
+            .legend-icon {
+                font-size: 20px;
+            }
+            
+            .legend-description {
+                font-size: 12px;
+            }
+            
+            .stakeholder-header {
+                font-size: 12px;
+            }
+            
+            .help-icon {
+                width: 18px;
+                height: 18px;
+                font-size: 11px;
+            }
+            
+            .tooltip {
+                font-size: 12px;
+                padding: 10px;
+                max-width: 200px;
+                bottom: 25px;
+            }
+            .nav-buttons {
+                flex-direction: column-reverse;
+                gap: 10px;
+                margin-top: 30px;
+                padding: 0 10px;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                padding: 12px 24px;
+                font-size: 14px;
+                justify-content: center;
+            }
+            
+            .back-btn {
+                order: 2;
+            }
+            
+            .next-btn {
+                margin-left: 0;
+                order: 1;
+            }
+            
+            /* Success message mobile */
+            .success-message {
+                padding: 40px 20px;
+                margin: 0 10px;
+            }
+            
+            .success-icon {
+                font-size: 48px;
+            }
+            
+            .success-title {
+                font-size: 24px;
+            }
+            
+            .success-text {
+                font-size: 16px;
+            }
+        }
+        
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            .phase-title {
+                font-size: 20px;
+            }
+            
+            .map-grid {
+                min-width: 400px;
+                grid-template-rows: repeat(3, 70px);
+            }
+            
+            .map-cell-label {
+                font-size: 9px;
+            }
+            
+            .stakeholder-bubble {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+        }
+        
+        /* Touch-friendly adjustments */
+        @media (hover: none) and (pointer: coarse) {
+            .task-item {
+                min-height: 50px;
+            }
+            
+            .add-stakeholder-btn,
+            .nav-btn,
+            .submit-btn {
+                min-height: 44px; /* Apple's recommended touch target */
+            }
+            
+            .remove-btn {
+                min-height: 36px;
+            }
+            
+            .stakeholder-select,
+            .form-select {
+                min-height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    DUX MACHINA OS
+                    <span class="tagline">Your AI-Powered Business Operating System</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="container">
+            <div class="progress-steps">
+                <div class="progress-step active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Stakeholder Assessment</div>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Communication Plan</div>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Risk Identification</div>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="step-circle">✓</div>
+                    <div class="step-label">Get Your Playbook</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Phase 1: Stakeholder Assessment -->
+            <div class="phase-container active" id="phase1">
+                <div class="phase-header">
+                    <h1 class="phase-title">Map Your Key Players</h1>
+                    <p class="phase-subtitle">Identify stakeholders and their positions on your transformation journey</p>
+                </div>
+
+                <div class="stakeholder-section">
+                    <div class="help-text">
+                        <strong>🎯 Quick Guide:</strong> List the key people or departments who will be affected by your new business system. For each stakeholder, assess their level of influence in your organization and their likely attitude toward the change. This helps you identify who to focus on during implementation.
+                    </div>
+                    
+                    <div class="stakeholder-legend">
+                        <div class="legend-item">
+                            <span class="legend-icon">🟢</span>
+                            <div class="legend-content">
+                                <div class="legend-title">Champions</div>
+                                <div class="legend-description">Enthusiastic supporters who will actively promote and help drive the change</div>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">🟡</span>
+                            <div class="legend-content">
+                                <div class="legend-title">Neutral</div>
+                                <div class="legend-description">Wait-and-see attitude, can be influenced either way with proper engagement</div>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">🔴</span>
+                            <div class="legend-content">
+                                <div class="legend-title">Resistors</div>
+                                <div class="legend-description">Skeptical or opposed to change, need special attention to address concerns</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="add-stakeholder-btn" onclick="addStakeholder()">
+                        <span>+</span> Add Stakeholder
+                    </button>
+                    <div id="stakeholderList"></div>
+                </div>
+
+                <div class="stakeholder-map">
+                    <h2 class="map-title">Stakeholder Influence Map</h2>
+                    <p style="text-align: center; color: #6b7280; margin-bottom: 20px; font-size: 14px;">
+                        Your stakeholders will appear on this grid based on their influence and support levels
+                    </p>
+                    <div class="map-grid">
+                        <div class="map-cell champion-high" data-support="Champion" data-influence="High">
+                            <span class="map-cell-label">Champion / High Influence</span>
+                            <div class="cell-stakeholders"></div>
+                        </div>
+                        <div class="map-cell neutral-high" data-support="Neutral" data-influence="High">
+                            <span class="map-cell-label">Neutral / High Influence</span>
+                            <div class="cell-stakeholders"></div>
+                        </div>
+                        <div class="map-cell resistor-high" data-support="Resistor" data-influence="High">
+                            <span class="map-cell-label">Resistor / High Influence</span>
+                            <div class="cell-stakeholders"></div>
+                        </div>
+                        <div class="map-cell champion-medium" data-support="Champion" data-influence="Medium">
+                            <span class="map-cell-label">Champion / Medium Influence</span>
+                            <div class="cell-stakeholders"></div>
+                        </div>
+                        <div class="map-cell neutral-medium" data-support="Neutral" data-influence="Medium">
+                            <span class="map-cell-label">Neutral / Medium Influence</span>
+                            <div class="cell-stakeholders"></div>
+                        </div>
+                        <div class="map-cell resistor-medium" data-support="Resistor" data-influence="Medium">
+                            <span class="map-cell-label">Resistor / Medium Influence</span>
+                            <div class="cell-stakeholders"></div>
+                        </div>
+                        <div class="map-cell champion-low" data-support="Champion" data-influence="Low">
+                            <span class="map-cell-label">Champion / Low Influence</span>
+                            <div class="cell-stakeholders"></div>
+                        </div>
+                        <div class="map-cell neutral-low" data-support="Neutral" data-influence="Low">
+                            <span class="map-cell-label">Neutral / Low Influence</span>
+                            <div class="cell-stakeholders"></div>
+                        </div>
+                        <div class="map-cell resistor-low" data-support="Resistor" data-influence="Low">
+                            <span class="map-cell-label">Resistor / Low Influence</span>
+                            <div class="cell-stakeholders"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="nav-btn next-btn" onclick="nextPhase()">
+                        Continue to Communication Plan
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phase 2: Communication Plan -->
+            <div class="phase-container" id="phase2">
+                <div class="phase-header">
+                    <h1 class="phase-title">Build Your Communication Timeline</h1>
+                    <p class="phase-subtitle">Select the key communication milestones for your transformation</p>
+                </div>
+
+                <div class="communication-section">
+                    <div class="help-text">
+                        <strong>📅 Pro Tip:</strong> Select the communication activities you plan to implement. The order matters! Start with leadership alignment, then build momentum through champions before rolling out to the broader organization. Each checked item will be added to your timeline.
+                    </div>
+                    
+                    <div class="task-list">
+                        <div class="task-item" onclick="toggleTask(this)" data-task="leadership">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-title">Announce the 'Why' to Leadership</div>
+                                <div class="task-description">Present the strategic vision and business case to executive team</div>
+                            </div>
+                        </div>
+                        <div class="task-item" onclick="toggleTask(this)" data-task="champions">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-title">Recruit Change Champions</div>
+                                <div class="task-description">Identify and onboard influential employees as transformation advocates</div>
+                            </div>
+                        </div>
+                        <div class="task-item" onclick="toggleTask(this)" data-task="allhands">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-title">Hold All-Hands Demo</div>
+                                <div class="task-description">Company-wide presentation showcasing the new system capabilities</div>
+                            </div>
+                        </div>
+                        <div class="task-item" onclick="toggleTask(this)" data-task="training">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-title">Schedule Department-Specific Training</div>
+                                <div class="task-description">Tailored training sessions for each team's unique workflows</div>
+                            </div>
+                        </div>
+                        <div class="task-item" onclick="toggleTask(this)" data-task="pilot">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-title">Launch Pilot Program</div>
+                                <div class="task-description">Begin with select teams to demonstrate early wins</div>
+                            </div>
+                        </div>
+                        <div class="task-item" onclick="toggleTask(this)" data-task="feedback">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-title">Establish Feedback Loops</div>
+                                <div class="task-description">Create channels for continuous improvement and user input</div>
+                            </div>
+                        </div>
+                        <div class="task-item" onclick="toggleTask(this)" data-task="celebrate">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-title">Celebrate Quick Wins</div>
+                                <div class="task-description">Publicly recognize early successes and adoption milestones</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-section">
+                    <h2 class="timeline-title">Your Communication Timeline</h2>
+                    <div class="timeline">
+                        <div class="timeline-line"></div>
+                        <div id="timelineItems"></div>
+                    </div>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="nav-btn back-btn" onclick="previousPhase()">
+                        <span>←</span>
+                        Back
+                    </button>
+                    <button class="nav-btn next-btn" onclick="nextPhase()">
+                        Continue to Risk Assessment
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phase 3: Risk Identification -->
+            <div class="phase-container" id="phase3">
+                <div class="phase-header">
+                    <h1 class="phase-title">Anticipate the Hurdles</h1>
+                    <p class="phase-subtitle">Drag your top 3 concerns into the priority zones</p>
+                </div>
+
+                <div class="risk-section">
+                    <div class="help-text">
+                        <strong>⚠️ How This Works:</strong> Below are common implementation challenges. Drag and drop the three risks you're most concerned about into the red priority zones. This helps focus your mitigation efforts on what matters most for your specific situation.
+                    </div>
+                    
+                    <div class="risk-grid" id="riskGrid">
+                        <div class="risk-item" draggable="true" data-risk="resistance">
+                            <div class="risk-icon">👥</div>
+                            <div class="risk-title">Employee Resistance to Change</div>
+                            <div class="risk-description">Staff reluctance to adopt new processes</div>
+                        </div>
+                        <div class="risk-item" draggable="true" data-risk="data">
+                            <div class="risk-icon">🔄</div>
+                            <div class="risk-title">Data Migration Complexity</div>
+                            <div class="risk-description">Challenges in transferring existing data</div>
+                        </div>
+                        <div class="risk-item" draggable="true" data-risk="integration">
+                            <div class="risk-icon">🔌</div>
+                            <div class="risk-title">System Integration Issues</div>
+                            <div class="risk-description">Difficulty connecting with existing tools</div>
+                        </div>
+                        <div class="risk-item" draggable="true" data-risk="training">
+                            <div class="risk-icon">📚</div>
+                            <div class="risk-title">Inadequate Training Resources</div>
+                            <div class="risk-description">Insufficient time or materials for learning</div>
+                        </div>
+                        <div class="risk-item" draggable="true" data-risk="budget">
+                            <div class="risk-icon">💰</div>
+                            <div class="risk-title">Budget Overruns</div>
+                            <div class="risk-description">Unexpected costs during implementation</div>
+                        </div>
+                        <div class="risk-item" draggable="true" data-risk="timeline">
+                            <div class="risk-icon">⏰</div>
+                            <div class="risk-title">Timeline Delays</div>
+                            <div class="risk-description">Project taking longer than expected</div>
+                        </div>
+                    </div>
+
+                    <div class="priority-section">
+                        <h3 class="priority-title">🎯 Top Priority Risks</h3>
+                        <div class="priority-slots">
+                            <div class="priority-slot" data-slot="1">
+                                <span class="slot-number">1</span>
+                                <span class="slot-placeholder">Drop risk here</span>
+                            </div>
+                            <div class="priority-slot" data-slot="2">
+                                <span class="slot-number">2</span>
+                                <span class="slot-placeholder">Drop risk here</span>
+                            </div>
+                            <div class="priority-slot" data-slot="3">
+                                <span class="slot-number">3</span>
+                                <span class="slot-placeholder">Drop risk here</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="nav-btn back-btn" onclick="previousPhase()">
+                        <span>←</span>
+                        Back
+                    </button>
+                    <button class="nav-btn next-btn" onclick="nextPhase()" disabled>
+                        Get Your Custom Playbook
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phase 4: Lead Capture -->
+            <div class="phase-container" id="phase4">
+                <div class="lead-capture-section">
+                    <form class="lead-form" id="leadForm" onsubmit="submitForm(event)">
+                        <h2 class="lead-title">Your Blueprint for a Seamless Transition is Ready</h2>
+                        <p class="lead-subtitle">Enter your details below to receive your personalized Change Management Playbook</p>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="name">Full Name *</label>
+                            <input type="text" id="name" class="form-input" placeholder="John Smith" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="email">Work Email *</label>
+                            <input type="email" id="email" class="form-input" placeholder="john@company.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="company">Company Name *</label>
+                            <input type="text" id="company" class="form-input" placeholder="Acme Corporation" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="role">Your Role *</label>
+                            <select id="role" class="form-select" required>
+                                <option value="">Select your role</option>
+                                <option value="c-suite">C-Suite/Executive</option>
+                                <option value="vp-director">VP/Director</option>
+                                <option value="consultant">Business Consultant</option>
+                                <option value="manager">Manager</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">Download My Custom Playbook</button>
+                    </form>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="nav-btn back-btn" onclick="previousPhase()">
+                        <span>←</span>
+                        Back
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success Message & Playbook Report -->
+            <div class="success-message" id="successMessage">
+                <div class="success-icon">🎉</div>
+                <h2 class="success-title">Your Custom Playbook is Ready!</h2>
+                <p class="success-text">We've created a personalized Change Management Playbook based on your inputs.</p>
+                <div class="download-actions">
+                    <button class="download-btn print-btn" onclick="downloadPlaybook()">
+                        📄 Download Playbook
+                    </button>
+                    <button class="download-btn print-btn" onclick="printPlaybook()" style="background: #6b7280;">
+                        🖨️ Print as PDF
+                    </button>
+                    <button class="download-btn email-btn" onclick="emailPlaybook()">
+                        📧 Email to Me
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Generated Playbook Report -->
+            <div class="playbook-report" id="playbookReport">
+                <div class="report-header">
+                    <div class="report-logo">⚙️ DUX MACHINA OS</div>
+                    <h1 class="report-title">Change Management Playbook</h1>
+                    <div class="report-company" id="reportCompany">Your Company</div>
+                    <div class="report-date" id="reportDate">Generated on Date</div>
+                </div>
+                
+                <div class="executive-summary">
+                    <h2 style="margin-top: 0; color: #1d4ed8;">Executive Summary</h2>
+                    <p id="executiveSummaryText">Based on your assessment, this playbook provides a customized roadmap for implementing DUX MACHINA OS in your organization.</p>
+                </div>
+                
+                <div class="report-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">👥</span>
+                        Stakeholder Engagement Strategy
+                    </h2>
+                    <div class="stakeholder-summary" id="stakeholderSummary">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <div class="stakeholder-grid" id="stakeholderGrid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+                
+                <div class="report-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">📅</span>
+                        Communication Timeline
+                    </h2>
+                    <div class="timeline-report" id="timelineReport">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+                
+                <div class="report-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">⚠️</span>
+                        Priority Risk Mitigation
+                    </h2>
+                    <div class="risk-priority-list" id="riskPriorityList">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+                
+                <div class="report-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">🚀</span>
+                        Recommended Next Steps
+                    </h2>
+                    <div class="next-steps">
+                        <ul class="next-steps-list" id="nextStepsList">
+                            <!-- Dynamically populated -->
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-info no-print">
+                    <p>This personalized playbook was generated by DUX MACHINA OS Change Readiness Planner</p>
+                    <p>For more information, visit duxmachina.com or contact our transformation experts</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Global state
+        let currentPhase = 1;
+        let plannerData = {
+            stakeholders: [],
+            communicationTasks: [],
+            topRisks: [],
+            leadInfo: {}
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add initial stakeholder
+            addStakeholder();
+            
+            // Initialize drag and drop
+            initializeDragAndDrop();
+            
+            // Ensure form submission is properly bound
+            const form = document.getElementById('leadForm');
+            if (form) {
+                form.addEventListener('submit', submitForm);
+            }
+        });
+
+        // Phase Navigation
+        function nextPhase() {
+            if (validateCurrentPhase()) {
+                if (currentPhase < 4) {
+                    document.getElementById(`phase${currentPhase}`).classList.remove('active');
+                    currentPhase++;
+                    document.getElementById(`phase${currentPhase}`).classList.add('active');
+                    updateProgressBar();
+                    window.scrollTo(0, 0);
+                }
+            }
+        }
+
+        function previousPhase() {
+            if (currentPhase > 1) {
+                document.getElementById(`phase${currentPhase}`).classList.remove('active');
+                currentPhase--;
+                document.getElementById(`phase${currentPhase}`).classList.add('active');
+                updateProgressBar();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function updateProgressBar() {
+            const steps = document.querySelectorAll('.progress-step');
+            steps.forEach((step, index) => {
+                if (index < currentPhase - 1) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (index === currentPhase - 1) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            });
+        }
+
+        // Phase 1: Stakeholder Management
+        let stakeholderCount = 0;
+
+        function addStakeholder() {
+            stakeholderCount++;
+            const stakeholderList = document.getElementById('stakeholderList');
+            
+            const stakeholderItem = document.createElement('div');
+            stakeholderItem.className = 'stakeholder-item';
+            stakeholderItem.id = `stakeholder-${stakeholderCount}`;
+            
+            stakeholderItem.innerHTML = `
+                <div>
+                    <div class="stakeholder-header">
+                        <span>Stakeholder/Department</span>
+                        <span class="help-icon">?
+                            <span class="tooltip">Examples: Sales Team, IT Director, Finance Department, Operations Manager</span>
+                        </span>
+                    </div>
+                    <input type="text" class="stakeholder-input" placeholder="e.g., Sales Team" onchange="updateStakeholderMap()">
+                </div>
+                <div>
+                    <div class="stakeholder-header">
+                        <span>Influence Level</span>
+                        <span class="help-icon">?
+                            <span class="tooltip">How much power do they have to impact the project's success?</span>
+                        </span>
+                    </div>
+                    <select class="stakeholder-select" onchange="updateStakeholderMap()">
+                        <option value="High">High - Decision maker</option>
+                        <option value="Medium" selected>Medium - Strong voice</option>
+                        <option value="Low">Low - Limited impact</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="stakeholder-header">
+                        <span>Support Level</span>
+                        <span class="help-icon">?
+                            <span class="tooltip">What's their likely attitude toward this change?</span>
+                        </span>
+                    </div>
+                    <select class="stakeholder-select" onchange="updateStakeholderMap()">
+                        <option value="Champion">Champion 🟢</option>
+                        <option value="Neutral" selected>Neutral 🟡</option>
+                        <option value="Resistor">Resistor 🔴</option>
+                    </select>
+                </div>
+                <button class="remove-btn" onclick="removeStakeholder('stakeholder-${stakeholderCount}')">Remove</button>
+            `;
+            
+            stakeholderList.appendChild(stakeholderItem);
+        }
+
+        function removeStakeholder(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.remove();
+                updateStakeholderMap();
+            }
+        }
+
+        function updateStakeholderMap() {
+            // Clear all cells
+            document.querySelectorAll('.cell-stakeholders').forEach(cell => {
+                cell.innerHTML = '';
+            });
+            
+            // Clear stakeholders array
+            plannerData.stakeholders = [];
+            
+            // Get all stakeholder items
+            const stakeholderItems = document.querySelectorAll('.stakeholder-item');
+            
+            stakeholderItems.forEach(item => {
+                const nameInput = item.querySelector('.stakeholder-input');
+                const selects = item.querySelectorAll('.stakeholder-select');
+                const influence = selects[0].value;
+                const support = selects[1].value;
+                const name = nameInput.value.trim();
+                
+                if (name) {
+                    // Add to data
+                    plannerData.stakeholders.push({
+                        name: name,
+                        influence: influence,
+                        support: support
+                    });
+                    
+                    // Find the appropriate cell
+                    const cell = document.querySelector(`.map-cell[data-support="${support}"][data-influence="${influence}"] .cell-stakeholders`);
+                    if (cell) {
+                        const bubble = document.createElement('span');
+                        bubble.className = 'stakeholder-bubble';
+                        bubble.textContent = name;
+                        cell.appendChild(bubble);
+                    }
+                }
+            });
+        }
+
+        // Phase 2: Communication Plan
+        function toggleTask(element) {
+            element.classList.toggle('checked');
+            updateTimeline();
+        }
+
+        function updateTimeline() {
+            const timelineItems = document.getElementById('timelineItems');
+            timelineItems.innerHTML = '';
+            
+            // Clear communication tasks
+            plannerData.communicationTasks = [];
+            
+            const checkedTasks = document.querySelectorAll('.task-item.checked');
+            const taskTimings = {
+                'leadership': { week: 'Week 1', event: 'Leadership Alignment' },
+                'champions': { week: 'Week 2', event: 'Champion Recruitment' },
+                'allhands': { week: 'Week 3', event: 'All-Hands Meeting' },
+                'training': { week: 'Week 4-6', event: 'Department Training' },
+                'pilot': { week: 'Week 5', event: 'Pilot Launch' },
+                'feedback': { week: 'Week 6', event: 'Feedback System' },
+                'celebrate': { week: 'Week 8', event: 'Success Celebration' }
+            };
+            
+            checkedTasks.forEach((task, index) => {
+                const taskType = task.getAttribute('data-task');
+                const timing = taskTimings[taskType];
+                
+                if (timing) {
+                    plannerData.communicationTasks.push(timing);
+                    
+                    const timelineItem = document.createElement('div');
+                    timelineItem.className = 'timeline-item';
+                    timelineItem.style.animationDelay = `${index * 0.1}s`;
+                    
+                    timelineItem.innerHTML = `
+                        <div class="timeline-content">
+                            <div class="timeline-date">${timing.week}</div>
+                            <div class="timeline-event">${timing.event}</div>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    `;
+                    
+                    timelineItems.appendChild(timelineItem);
+                }
+            });
+        }
+
+        // Phase 3: Risk Management
+        function initializeDragAndDrop() {
+            const riskItems = document.querySelectorAll('.risk-item');
+            const prioritySlots = document.querySelectorAll('.priority-slot');
+            
+            riskItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+            
+            prioritySlots.forEach(slot => {
+                slot.addEventListener('dragover', handleDragOver);
+                slot.addEventListener('drop', handleDrop);
+            });
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            
+            if (draggedElement && e.target.classList.contains('priority-slot')) {
+                // Check if slot already has a risk
+                const existingRisk = e.target.querySelector('.risk-item');
+                if (existingRisk) {
+                    // Return existing risk to grid
+                    document.getElementById('riskGrid').appendChild(existingRisk);
+                }
+                
+                // Clone the dragged element
+                const clone = draggedElement.cloneNode(true);
+                clone.classList.remove('dragging');
+                
+                // Clear the slot and add the risk
+                e.target.innerHTML = `<span class="slot-number">${e.target.getAttribute('data-slot')}</span>`;
+                e.target.appendChild(clone);
+                e.target.classList.add('filled');
+                
+                // Update the button state
+                updateRiskValidation();
+            }
+        }
+
+        function updateRiskValidation() {
+            const filledSlots = document.querySelectorAll('.priority-slot.filled');
+            const nextButton = document.querySelector('#phase3 .next-btn');
+            
+            // Clear top risks
+            plannerData.topRisks = [];
+            
+            if (filledSlots.length === 3) {
+                nextButton.disabled = false;
+                
+                // Collect top risks
+                filledSlots.forEach(slot => {
+                    const riskItem = slot.querySelector('.risk-item');
+                    if (riskItem) {
+                        const riskTitle = riskItem.querySelector('.risk-title').textContent;
+                        plannerData.topRisks.push(riskTitle);
+                    }
+                });
+            } else {
+                nextButton.disabled = true;
+            }
+        }
+
+        // Phase validation
+        function validateCurrentPhase() {
+            switch(currentPhase) {
+                case 1:
+                    // Check if at least one stakeholder with name is added
+                    const filledStakeholders = document.querySelectorAll('.stakeholder-input');
+                    let hasValidStakeholder = false;
+                    filledStakeholders.forEach(input => {
+                        if (input.value.trim()) {
+                            hasValidStakeholder = true;
+                        }
+                    });
+                    
+                    if (!hasValidStakeholder) {
+                        alert('Please add at least one stakeholder before proceeding.');
+                        return false;
+                    }
+                    return true;
+                    
+                case 2:
+                    // Check if at least one task is selected
+                    const checkedTasks = document.querySelectorAll('.task-item.checked');
+                    if (checkedTasks.length === 0) {
+                        alert('Please select at least one communication task before proceeding.');
+                        return false;
+                    }
+                    return true;
+                    
+                case 3:
+                    // Validation handled by button state
+                    return true;
+                    
+                default:
+                    return true;
+            }
+        }
+
+        // Form submission
+        function submitForm(e) {
+            e.preventDefault();
+            
+            try {
+                // Collect form data
+                plannerData.leadInfo = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    company: document.getElementById('company').value,
+                    role: document.getElementById('role').value
+                };
+                
+                // Generate the custom playbook
+                generatePlaybook();
+                
+                // Hide the form container
+                const phase4 = document.getElementById('phase4');
+                if (phase4) {
+                    phase4.classList.remove('active');
+                    phase4.style.display = 'none';
+                }
+                
+                // Show success message
+                const successMsg = document.getElementById('successMessage');
+                if (successMsg) {
+                    successMsg.style.display = 'block';
+                }
+                
+                // Show the playbook report
+                const playbookReport = document.getElementById('playbookReport');
+                if (playbookReport) {
+                    playbookReport.style.display = 'block';
+                }
+                
+                // Update progress bar to show completion
+                const steps = document.querySelectorAll('.progress-step');
+                steps.forEach(step => {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                });
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+                
+                // In production, also send to server
+                /*
+                fetch('/api/generate-playbook', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(plannerData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+                */
+                
+            } catch (error) {
+                console.error('Form submission error:', error);
+                alert('There was an error submitting the form. Please try again.');
+            }
+            
+            return false;
+        }
+        
+        // Generate custom playbook based on user inputs
+        function generatePlaybook() {
+            // Set company name and date
+            document.getElementById('reportCompany').textContent = plannerData.leadInfo.company;
+            document.getElementById('reportDate').textContent = `Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`;
+            
+            // Generate executive summary
+            const champions = plannerData.stakeholders.filter(s => s.support === 'Champion').length;
+            const resistors = plannerData.stakeholders.filter(s => s.support === 'Resistor').length;
+            const highInfluence = plannerData.stakeholders.filter(s => s.influence === 'High').length;
+            
+            let summaryText = `Based on your assessment of ${plannerData.stakeholders.length} key stakeholders, `;
+            if (champions > resistors) {
+                summaryText += `you have strong support for change with ${champions} champions identified. `;
+            } else if (resistors > champions) {
+                summaryText += `you'll need to focus on change resistance management with ${resistors} resistors identified. `;
+            } else {
+                summaryText += `you have a balanced stakeholder landscape that will require careful navigation. `;
+            }
+            summaryText += `Your ${plannerData.communicationTasks.length}-step communication plan and focus on ${plannerData.topRisks.length} priority risks will guide your implementation of DUX MACHINA OS.`;
+            
+            document.getElementById('executiveSummaryText').textContent = summaryText;
+            
+            // Generate stakeholder analysis
+            generateStakeholderAnalysis();
+            
+            // Generate timeline
+            generateTimelineReport();
+            
+            // Generate risk mitigation strategies
+            generateRiskMitigation();
+            
+            // Generate next steps
+            generateNextSteps();
+        }
+        
+        function generateStakeholderAnalysis() {
+            const summary = document.getElementById('stakeholderSummary');
+            const grid = document.getElementById('stakeholderGrid');
+            
+            // Group stakeholders
+            const groups = {
+                'Champion': { icon: '🟢', title: 'Champions', stakeholders: [] },
+                'Neutral': { icon: '🟡', title: 'Neutral', stakeholders: [] },
+                'Resistor': { icon: '🔴', title: 'Resistors', stakeholders: [] }
+            };
+            
+            plannerData.stakeholders.forEach(s => {
+                groups[s.support].stakeholders.push(s);
+            });
+            
+            // Create summary
+            let summaryHTML = '<p><strong>Key Insight:</strong> ';
+            const highInfluenceChampions = plannerData.stakeholders.filter(s => s.support === 'Champion' && s.influence === 'High');
+            const highInfluenceResistors = plannerData.stakeholders.filter(s => s.support === 'Resistor' && s.influence === 'High');
+            
+            if (highInfluenceChampions.length > 0) {
+                summaryHTML += `Leverage your high-influence champions (${highInfluenceChampions.map(s => s.name).join(', ')}) to drive adoption. `;
+            }
+            if (highInfluenceResistors.length > 0) {
+                summaryHTML += `Address concerns of high-influence resistors (${highInfluenceResistors.map(s => s.name).join(', ')}) early in the process.`;
+            }
+            summaryHTML += '</p>';
+            summary.innerHTML = summaryHTML;
+            
+            // Create grid
+            let gridHTML = '';
+            Object.entries(groups).forEach(([key, group]) => {
+                gridHTML += `
+                    <div class="stakeholder-category">
+                        <div class="category-header">
+                            <span>${group.icon}</span>
+                            <span>${group.title} (${group.stakeholders.length})</span>
+                        </div>
+                        <div class="stakeholder-list">
+                            ${group.stakeholders.map(s => `${s.name} (${s.influence})`).join('<br>')}
+                        </div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = gridHTML;
+        }
+        
+        function generateTimelineReport() {
+            const timeline = document.getElementById('timelineReport');
+            let timelineHTML = '';
+            
+            plannerData.communicationTasks.forEach((task, index) => {
+                timelineHTML += `
+                    <div class="timeline-report-item">
+                        <div class="timeline-report-dot"></div>
+                        <div class="timeline-report-date">${task.week}</div>
+                        <div class="timeline-report-event">${task.event}</div>
+                    </div>
+                `;
+            });
+            
+            timeline.innerHTML = timelineHTML;
+        }
+        
+        function generateRiskMitigation() {
+            const riskList = document.getElementById('riskPriorityList');
+            
+            const mitigationStrategies = {
+                'Employee Resistance to Change': 'Implement a comprehensive change management program with regular town halls, success story sharing, and incentive programs for early adopters.',
+                'Data Migration Complexity': 'Conduct thorough data audit, create detailed migration plan with rollback procedures, and perform phased migration with validation checkpoints.',
+                'System Integration Issues': 'Map all integration points early, use DUX MACHINA\'s proven integration templates, and maintain parallel systems during transition period.',
+                'Inadequate Training Resources': 'Develop role-based training paths, create video tutorials and documentation, and establish super-user program for ongoing support.',
+                'Budget Overruns': 'Define clear project scope, implement phase-gate approval process, and maintain 15% contingency buffer for unexpected costs.',
+                'Timeline Delays': 'Use agile implementation methodology, set realistic milestones with buffer time, and identify critical path dependencies upfront.'
+            };
+            
+            let riskHTML = '';
+            plannerData.topRisks.forEach((risk, index) => {
+                const mitigation = mitigationStrategies[risk] || 'Develop specific mitigation plan with project team.';
+                riskHTML += `
+                    <div class="risk-priority-item">
+                        <div class="risk-title-report">${risk}</div>
+                        <div class="risk-mitigation"><strong>Mitigation Strategy:</strong> ${mitigation}</div>
+                    </div>
+                `;
+            });
+            
+            riskList.innerHTML = riskHTML;
+        }
+        
+        function generateNextSteps() {
+            const nextSteps = document.getElementById('nextStepsList');
+            
+            // Customize next steps based on their profile
+            let steps = [
+                'Schedule a discovery call with DUX MACHINA OS implementation team',
+                'Conduct detailed current-state assessment of your existing systems',
+                'Define success metrics and KPIs for your transformation'
+            ];
+            
+            // Add role-specific steps
+            if (plannerData.leadInfo.role === 'consultant') {
+                steps.push('Explore partnership opportunities with DUX MACHINA OS');
+                steps.push('Access our consultant resource portal for client proposals');
+            } else {
+                steps.push('Align executive team on transformation vision and timeline');
+                steps.push('Identify pilot department for initial implementation');
+            }
+            
+            let stepsHTML = '';
+            steps.forEach(step => {
+                stepsHTML += `<li>${step}</li>`;
+            });
+            
+            nextSteps.innerHTML = stepsHTML;
+        }
+        
+        // Print functionality
+        function printPlaybook() {
+            // Show only the playbook for printing
+            const allElements = document.body.children;
+            const playbookReport = document.getElementById('playbookReport');
+            
+            // Hide all elements except playbook
+            for (let i = 0; i < allElements.length; i++) {
+                if (allElements[i] !== playbookReport) {
+                    allElements[i].style.display = 'none';
+                }
+            }
+            
+            // Make sure playbook is visible
+            playbookReport.style.display = 'block';
+            
+            // Trigger print
+            window.print();
+            
+            // Restore visibility after print
+            setTimeout(() => {
+                for (let i = 0; i < allElements.length; i++) {
+                    allElements[i].style.display = '';
+                }
+                // Keep success message and playbook visible
+                document.getElementById('successMessage').style.display = 'block';
+                playbookReport.style.display = 'block';
+            }, 1000);
+        }
+        
+        // Alternative download method using blob
+        function downloadPlaybook() {
+            const playbook = document.getElementById('playbookReport');
+            const companyName = plannerData.leadInfo.company.replace(/\s+/g, '_');
+            const fileName = `${companyName}_Change_Management_Playbook.html`;
+            
+            // Create a complete HTML document
+            const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>${plannerData.leadInfo.company} - Change Management Playbook</title>
+    <style>
+        body { font-family: Georgia, serif; line-height: 1.6; color: #1a1a1a; max-width: 800px; margin: 40px auto; padding: 40px; }
+        .report-header { text-align: center; margin-bottom: 50px; padding-bottom: 30px; border-bottom: 3px solid #2563eb; }
+        .report-logo { font-size: 32px; font-weight: 700; color: #2563eb; margin-bottom: 10px; }
+        .report-title { font-size: 28px; color: #1a1a1a; margin-bottom: 20px; font-weight: 300; }
+        .report-company { font-size: 24px; color: #2563eb; font-weight: 600; margin-bottom: 10px; }
+        .report-date { color: #6b7280; font-size: 16px; }
+        .report-section { margin-bottom: 40px; page-break-inside: avoid; }
+        .section-title { font-size: 22px; color: #2563eb; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .executive-summary { background: #eff6ff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #3b82f6; }
+        .stakeholder-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stakeholder-category { background: white; padding: 15px; border-radius: 8px; border: 2px solid #e5e7eb; }
+        .timeline-report-item { position: relative; padding-bottom: 20px; margin-bottom: 20px; border-left: 2px solid #e5e7eb; padding-left: 30px; }
+        .risk-priority-item { background: #fee2e2; padding: 20px; border-radius: 8px; margin-bottom: 15px; }
+        .next-steps { background: #f0fdf4; padding: 25px; border-radius: 8px; }
+        @media print { body { margin: 0; padding: 20px; } }
+    </style>
+</head>
+<body>
+    ${playbook.innerHTML}
+</body>
+</html>`;
+            
+            // Create blob and download
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+        
+        // Email functionality (requires backend)
+        function emailPlaybook() {
+            alert(`In production, this would email the playbook to ${plannerData.leadInfo.email}. For now, use the Download option to save the file.`);
+            // In production, this would trigger a server-side email
+        }
+    </script>
+</body>
+</html>
